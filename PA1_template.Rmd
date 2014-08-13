@@ -1,20 +1,221 @@
 # Reproducible Research: Peer Assessment 1
 
+## Setup
+```{r}
+setwd("~/GitHub/RepData_PeerAssessment1")
 
+# check for directories and create if needed
+if (!file.exists("data")) {
+  dir.create("data")
+}
+
+if (!file.exists("figures")) {
+  dir.create("figures")
+}
+
+# Check and load packages
+
+install_required_libs<-function() {
+    for(i in 1:length(required_lib)) {
+        if(required_lib[i] %in% rownames(installed.packages()) == FALSE) {
+            install.packages(required_lib[i])                            }
+        library(required_lib[i], character.only = TRUE)
+                                     }
+                                  }
+
+required_lib =c("ggplot2","ggvis","dplyr")
+
+install_required_libs()
+
+```
 ## Loading and preprocessing the data
 
+* Show any code that is needed to Load the data (i.e. read.csv())  
 
+* Process/transform the data (if necessary) into a format suitable for your analysis  
 
-## What is mean total number of steps taken per day?
+```{r}
+a_data <- read.csv(file="./data/activity.csv",header=TRUE,fill=TRUE)
 
+str(a_data)
+summary(a_data)
 
+# transform data
+
+a_data$date <- as.Date(a_data$date, "%Y-%m-%d")
+summary(a_data)
+```
+## What is mean total number of steps taken per day?  
+
+For this part of the assignment, you can ignore the missing values in the  
+dataset.  
+
+* Make a histogram of the total number of steps taken each day  
+
+* Calculate and report the mean and median total number of steps taken per day  
+
+```{r}
+# Use dplyr and ggvis to group and display histogram of total steps
+# steps <- 
+# a_data %>%
+#   group_by(date) %>%
+#   summarize(nsteps = sum(steps)) %>%
+#   ggvis(~nsteps) %>%
+#   layer_histograms(binwidth = 1000) %>%
+#   add_axis("x", title = "Number of Steps Taken") %>%
+#   add_axis("x", orient = "top", ticks = 0, title = "Histogram of Steps Taken per Day",
+#            properties = axis_props(
+#              axis = list(stroke = "white"),
+#              labels = list(fontSize = 0)))
+# 
+# steps
+
+steps_plot <-
+a_data %>%
+  group_by(date) %>%
+  summarize(nsteps = sum(steps)) %>%
+  ggplot(aes(x=nsteps)) + geom_histogram(binwidth = 1000)
+
+         
+         
+steps_plot + labs(title="Number of Steps per Day", x= "Number of Steps")
+
+png(file = "./figures/rrpa1_hist1.png")
+
+steps_plot <-
+a_data %>%
+  group_by(date) %>%
+  summarize(nsteps = sum(steps)) %>%
+  ggplot(aes(x=nsteps)) + 
+    geom_histogram(binwidth = 1000) +
+    labs(title="Number of Steps per Day", x= "Number of Steps")
+
+steps_plot
+
+dev.off()
+
+# group data by day summing steps
+meansteps <-
+    a_data %>%
+    group_by(date) %>%
+    summarize(nsteps = sum(steps))
+
+# find mean and median number of steps by day
+meansteps
+ms <- mean(meansteps$nsteps,na.rm=TRUE)
+med <- median(meansteps$nsteps,na.rm=TRUE)
+
+ms
+med
+    
+```
+The mean number of steps taken per day is **`r as.integer(ms)`** and the median 
+number of steps taken per day is **`r med`**.  
 
 ## What is the average daily activity pattern?
 
+Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis)  
+and the average number of steps taken, averaged across all days (y-axis)  
 
+Which 5-minute interval, on average across all the days in the dataset,  
+contains the maximum number of steps?  
+```{r}
+
+# Find and remove NA rows
+
+sum(is.na(a_data))
+
+for (i in 1:ncol(a_data)) {
+  print(names(a_data)[i]);print(sum(is.na(a_data[,i])))
+}
+
+bad_steps <- is.na(a_data$steps)
+ga_data <- a_data[!bad_steps,]
+
+summary(a_data)
+summary(ga_data)
+
+# inter <-
+#     ga_data %>%
+#     group_by(interval) %>%
+#     summarize(avgsteps = mean(steps)) %>%
+#     ggvis(~interval,~avgsteps) %>%
+#     layer_paths()
+# 
+# inter
+
+# Plot time series avgsteps by interval
+
+inter_ggp <-
+    ga_data %>%
+    group_by(interval) %>%
+    summarize(avgsteps = mean(steps)) %>%
+    ggplot(aes(x=interval,y=avgsteps)) +
+           geom_line() +
+           scale_x_continuous(breaks = seq(0, 2400, by = 200))
+
+inter_ggp
+
+# order avgstep by interval data from High to Low
+
+inter1 <-
+    ga_data %>%
+    group_by(interval) %>%
+    summarize(avgsteps = mean(steps)) %>%
+    arrange(desc(avgsteps))
+
+inter1
+
+inter1$interval[1]
+
+
+# inter2 <-
+#     ga_data %>%
+#     group_by(interval) %>%
+#     summarize(avgsteps = mean(steps)) %>%
+#     filter(interval >= 750 & interval <= 850) %>%
+#     ggvis(~interval,~avgsteps) %>%
+#     layer_paths()
+# 
+# inter2
+
+```
+Interval **`r inter1$interval[1]`** has the maximun average number of steps.
 
 ## Imputing missing values
 
+```{r}
 
+sum(is.na(a_data))
+
+for (i in 1:ncol(a_data)) {
+  print(names(a_data)[i]);print(sum(is.na(a_data[,i])))
+}
+
+bad_steps <- is.na(a_data$steps)
+ba_data <- a_data[bad_steps,]
+
+ba_data
+
+tt <- left_join(a_data, inter1)
+
+head(tt)
+tail(tt)
+
+tt$avgsteps <- as.integer(tt$avgsteps)
+
+head(tt)
+tail(tt)
+
+ttt <- is.na(tt$steps)
+
+tt$steps[is.na(tt$steps)] <- tt$avgsteps
+
+head(tt)
+tail(tt)
+
+summary(tt)
+
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
