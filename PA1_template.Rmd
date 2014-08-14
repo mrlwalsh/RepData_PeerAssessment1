@@ -237,7 +237,47 @@ tail(tt)
 
 summary(tt)
 
+
+steps_plot_revised <-
+tt %>%
+  group_by(date) %>%
+  summarize(nsteps = sum(steps)) %>%
+  ggplot(aes(x=nsteps)) + geom_histogram(binwidth = 1000)
+
+         
+steps_plot_revised + labs(title="Number of Steps per Day", x= "Number of Steps")
+
+png(file = "./figures/rrpa1_hist1_rev.png")
+
+steps_plot_revised <-
+tt %>%
+  group_by(date) %>%
+  summarize(nsteps = sum(steps)) %>%
+  ggplot(aes(x=nsteps)) + 
+    geom_histogram(binwidth = 1000) +
+    labs(title="Number of Steps per Day", x= "Number of Steps")
+
+steps_plot_revised
+
+dev.off()
+
+# group data by day summing steps
+meansteps_revised <-
+    tt %>%
+    group_by(date) %>%
+    summarize(nsteps = sum(steps))
+
+# find mean and median number of steps by day
+# meansteps
+
+ms <- mean(meansteps_revised$nsteps,na.rm=TRUE)
+med <- median(meansteps_revised$nsteps,na.rm=TRUE)
+
+ms
+med
 ```
+The mean number of steps taken per day is **`r as.integer(ms)`** and the median 
+number of steps taken per day is **`r med`**.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
