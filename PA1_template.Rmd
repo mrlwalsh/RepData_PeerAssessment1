@@ -76,9 +76,9 @@ a_data %>%
   summarize(nsteps = sum(steps)) %>%
   ggplot(aes(x=nsteps)) + geom_histogram(binwidth = 1000)
 
-         
-         
 steps_plot + labs(title="Number of Steps per Day", x= "Number of Steps")
+
+#Place plot in figures directory
 
 png(file = "./figures/rrpa1_hist1.png")
 
@@ -152,9 +152,29 @@ inter_ggp <-
     summarize(avgsteps = mean(steps)) %>%
     ggplot(aes(x=interval,y=avgsteps)) +
            geom_line() +
-           scale_x_continuous(breaks = seq(0, 2400, by = 200))
+           scale_x_continuous(breaks = seq(0, 2400, by = 200)) +
+           labs(title="Time Series of Average Steps over Interval", 
+                x= "Intra Day Interval")
 
 inter_ggp
+
+# Save Plot to figures dirtectory
+
+png(file = "./figures/rrpa1_interval.png")
+
+inter_ggp <-
+    ga_data %>%
+    group_by(interval) %>%
+    summarize(avgsteps = mean(steps)) %>%
+    ggplot(aes(x=interval,y=avgsteps)) +
+           geom_line() +
+           scale_x_continuous(breaks = seq(0, 2400, by = 200)) +
+           labs(title="Time Series of Average Steps over Interval", 
+                x= "Intra Day Interval")
+
+inter_ggp
+
+dev.off()
 
 # order avgstep by interval data from High to Low
 
@@ -237,7 +257,6 @@ tail(tt)
 
 summary(tt)
 
-
 steps_plot_revised <-
 tt %>%
   group_by(date) %>%
@@ -270,14 +289,15 @@ meansteps_revised <-
 # find mean and median number of steps by day
 # meansteps
 
-ms <- mean(meansteps_revised$nsteps,na.rm=TRUE)
-med <- median(meansteps_revised$nsteps,na.rm=TRUE)
+ms_rev <- mean(meansteps_revised$nsteps,na.rm=TRUE)
+med_rev <- median(meansteps_revised$nsteps,na.rm=TRUE)
 
-ms
-med
+ms_rev
+med_rev
 ```
-The mean number of steps taken per day is **`r as.integer(ms)`** and the median 
-number of steps taken per day is **`r med`**.  
+The mean number of steps taken per day is **`r as.integer(ms_rev)`** and the median 
+number of steps taken per day is **`r med_rev`**, after replacing missing values
+for steps with the average number of steps for each interval.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -292,9 +312,48 @@ Make a panel plot containing a time series plot (i.e. type = "l") of the
 across all weekday days or weekend days (y-axis). The plot should look  
 something like the following, which was creating using simulated data:  
 
-![Sample panel plot](sample_plot_1.png)
+![Sample panel plot](figures/sample_plot_1.png)
 
 Your plot will look different from the one above because you will be using the  
 activity monitor data. Note that the above plot was made using the lattice  
 system but you can make the same version of the plot using any plotting system  
 you choose.
+
+```{r}
+
+inter_by_day_type <-
+    tt %>%
+    mutate(day_name = weekdays(date),
+           day_type = ifelse(day_name == "Saturday" | 
+                             day_name == "Sunday","Weekend","Weekday")) %>%
+    group_by(interval,day_type) %>%
+    summarize(avgsteps_day = mean(steps)) %>%
+    ggplot(aes(x=interval,y=avgsteps_day)) +
+           geom_line() +
+           facet_grid(day_type ~ .) +
+           scale_x_continuous(breaks = seq(0, 2400, by = 200)) +
+           labs(title="Time Series of Average Steps over Interval", 
+                x= "Intra Day Interval")
+
+inter_by_day_type
+
+png(file = "./figures/rrpa1_ts_day_type.png")
+
+inter_by_day_type <-
+    tt %>%
+    mutate(day_name = weekdays(date),
+           day_type = ifelse(day_name == "Saturday" | 
+                             day_name == "Sunday","Weekend","Weekday")) %>%
+    group_by(interval,day_type) %>%
+    summarize(avgsteps_day = mean(steps)) %>%
+    ggplot(aes(x=interval,y=avgsteps_day)) +
+           geom_line() +
+           facet_grid(day_type ~ .) +
+           scale_x_continuous(breaks = seq(0, 2400, by = 200)) +
+           labs(title="Time Series of Average Steps over Interval", 
+                x= "Intra Day Interval")
+
+inter_by_day_type
+
+
+dev.off()
