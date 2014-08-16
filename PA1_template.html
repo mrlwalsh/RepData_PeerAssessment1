@@ -57,6 +57,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <h1>Reproducible Research: Peer Assessment 1</h1>
 <div id="setup" class="section level2">
 <h2>Setup</h2>
+<p>Set the working directory, check and set directories, check and load packages, load libraries.</p>
 <pre class="r"><code>setwd(&quot;~/GitHub/RepData_PeerAssessment1&quot;)
 
 # check for directories and create if needed
@@ -370,6 +371,8 @@ inter1</code></pre>
 ## ..      ...      ...</code></pre>
 <pre class="r"><code>inter1$interval[1]</code></pre>
 <pre><code>## [1] 835</code></pre>
+<pre class="r"><code>inter1$avgsteps[1]</code></pre>
+<pre><code>## [1] 206.2</code></pre>
 <pre class="r"><code># inter2 &lt;-
 #     ga_data %&gt;%
 #     group_by(interval) %&gt;%
@@ -379,7 +382,7 @@ inter1</code></pre>
 #     layer_paths()
 # 
 # inter2</code></pre>
-<p>Interval <strong>835</strong> has the maximun average number of steps.</p>
+<p>Interval <strong>835</strong> has <strong>206</strong> average steps, the maximun average number of steps.</p>
 </div>
 <div id="imputing-missing-values" class="section level2">
 <h2>Imputing missing values</h2>
@@ -388,7 +391,11 @@ inter1</code></pre>
 <p>Devise a strategy for filling in all of the missing values in the dataset.<br />The strategy does not need to be sophisticated. For example, you could use<br />the mean/median for that day, or the mean for that 5-minute interval, etc.</p>
 <p>Create a new dataset that is equal to the original dataset but with the<br />missing data filled in.</p>
 <p>Make a histogram of the total number of steps taken each day and Calculate<br />and report the mean and median total number of steps taken per day. Do these<br />values differ from the estimates from the first part of the assignment? What<br />is the impact of imputing missing data on the estimates of the total daily<br />number of steps?</p>
-<pre class="r"><code>sum(is.na(a_data))</code></pre>
+<div id="strategy-for-replacing-na-values" class="section level4">
+<h4>Strategy for Replacing NA Values</h4>
+<p>The better approach for replacing missing step data is to use the average for each interval across all days. The range of step values seems to be narrower for each interval across all days than for each day across all intervals. I am using the average of each interval across all days to replace missing step data in the dataframe.</p>
+<pre class="r"><code>#Find missing data values
+sum(is.na(a_data))</code></pre>
 <pre><code>## [1] 2304</code></pre>
 <pre class="r"><code>for (i in 1:ncol(a_data)) {
   print(names(a_data)[i]);print(sum(is.na(a_data[,i])))
@@ -404,7 +411,8 @@ ba_data &lt;- a_data[bad_steps,]
 
 nrow(ba_data)</code></pre>
 <pre><code>## [1] 2304</code></pre>
-<pre class="r"><code>tt &lt;- left_join(a_data, inter1)</code></pre>
+<pre class="r"><code># Use left join of original activity dataframe with interval averages data frame
+tt &lt;- left_join(a_data, inter1)</code></pre>
 <pre><code>## Joining by: &quot;interval&quot;</code></pre>
 <pre class="r"><code>head(tt)</code></pre>
 <pre><code>##   steps       date interval avgsteps
@@ -442,6 +450,7 @@ head(tt)</code></pre>
 ## 17568    NA 2012-11-30     2355        1</code></pre>
 <pre class="r"><code>ttt &lt;- is.na(tt$steps)
 
+# Replace NA state values with average across intervals
 tt$steps[is.na(tt$steps)] &lt;- tt$avgsteps</code></pre>
 <pre><code>## Warning: number of items to replace is not a multiple of replacement
 ## length</code></pre>
@@ -469,7 +478,8 @@ tt$steps[is.na(tt$steps)] &lt;- tt$avgsteps</code></pre>
 ##  Mean   : 37.3   Mean   :2012-10-31   Mean   :1178   Mean   : 37.0  
 ##  3rd Qu.: 27.0   3rd Qu.:2012-11-15   3rd Qu.:1766   3rd Qu.: 52.2  
 ##  Max.   :806.0   Max.   :2012-11-30   Max.   :2355   Max.   :206.0</code></pre>
-<pre class="r"><code>steps_plot_revised &lt;-
+<pre class="r"><code># Plot histogram with missing values replaced with averages
+steps_plot_revised &lt;-
 tt %&gt;%
   group_by(date) %&gt;%
   summarize(nsteps = sum(steps)) %&gt;%
@@ -510,6 +520,7 @@ ms_rev</code></pre>
 <pre class="r"><code>med_rev</code></pre>
 <pre><code>## [1] 10641</code></pre>
 <p>The mean number of steps taken per day is <strong>10749</strong> and the median number of steps taken per day is <strong>10641</strong>, after replacing missing values for steps with the average number of steps for each interval.</p>
+</div>
 </div>
 <div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
@@ -556,6 +567,7 @@ inter_by_day_type
 dev.off()</code></pre>
 <pre><code>## pdf 
 ##   2</code></pre>
+<p>The panel plot does show differences in the time series of steps on weekdays versus weekends.</p>
 </div>
 </div>
 

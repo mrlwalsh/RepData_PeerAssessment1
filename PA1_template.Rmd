@@ -1,6 +1,9 @@
 # Reproducible Research: Peer Assessment 1
 
-## Setup
+## Setup  
+
+Set the working directory, check and set directories, check and load packages,
+load libraries.  
 ```{r}
 setwd("~/GitHub/RepData_PeerAssessment1")
 
@@ -187,7 +190,7 @@ inter1 <-
 inter1
 
 inter1$interval[1]
-
+inter1$avgsteps[1]
 
 # inter2 <-
 #     ga_data %>%
@@ -200,7 +203,8 @@ inter1$interval[1]
 # inter2
 
 ```
-Interval **`r inter1$interval[1]`** has the maximun average number of steps.
+Interval **`r inter1$interval[1]`** has **`r as.integer(inter1$avgsteps[1])`** average
+steps, the maximun average number of steps.
 
 ## Imputing missing values
 
@@ -224,9 +228,18 @@ values differ from the estimates from the first part of the assignment? What
 is the impact of imputing missing data on the estimates of the total daily  
 number of steps?  
 
+#### Strategy for Replacing NA Values  
+
+The better approach for replacing missing step data is to use the average for
+each interval across all days.  The range of step values seems to be narrower
+for each interval across all days than for each day across all intervals.  I am
+using the average of each interval across all days to replace missing step data
+in the dataframe.  
+
 
 ```{r}
 
+#Find missing data values
 sum(is.na(a_data))
 
 for (i in 1:ncol(a_data)) {
@@ -238,6 +251,7 @@ ba_data <- a_data[bad_steps,]
 
 nrow(ba_data)
 
+# Use left join of original activity dataframe with interval averages data frame
 tt <- left_join(a_data, inter1)
 
 head(tt)
@@ -250,6 +264,7 @@ tail(tt)
 
 ttt <- is.na(tt$steps)
 
+# Replace NA state values with average across intervals
 tt$steps[is.na(tt$steps)] <- tt$avgsteps
 
 head(tt)
@@ -257,6 +272,7 @@ tail(tt)
 
 summary(tt)
 
+# Plot histogram with missing values replaced with averages
 steps_plot_revised <-
 tt %>%
   group_by(date) %>%
@@ -357,3 +373,6 @@ inter_by_day_type
 
 
 dev.off()
+```
+The panel plot does show differences in the time series of steps on weekdays
+versus weekends.  
