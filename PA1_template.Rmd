@@ -10,7 +10,7 @@ output:
 
 Set the working directory, check and set directories, check and load packages,
 load libraries.  
-```{r}
+```{r Setup}
 setwd("~/GitHub/RepData_PeerAssessment1")
 
 # check for directories and create if needed
@@ -43,12 +43,13 @@ install_required_libs()
 
 * Process/transform the data (if necessary) into a format suitable for your analysis  
 
-```{r}
+```{r Load_Data}
 a_data <- read.csv(file="./data/activity.csv",header=TRUE,fill=TRUE)
 
 str(a_data)
 summary(a_data)
-
+```
+```{r Transform_Data}
 # transform data
 
 a_data$date <- as.Date(a_data$date, "%Y-%m-%d")
@@ -63,22 +64,24 @@ dataset.
 
 * Calculate and report the mean and median total number of steps taken per day  
 
-```{r NumberofStepsHistogram}
-# Use dplyr and ggvis to group and display histogram of total steps
-# steps <- 
-# a_data %>%
-#   group_by(date) %>%
-#   summarize(nsteps = sum(steps)) %>%
-#   ggvis(~nsteps) %>%
-#   layer_histograms(binwidth = 1000) %>%
-#   add_axis("x", title = "Number of Steps Taken") %>%
-#   add_axis("x", orient = "top", ticks = 0, title = "Histogram of Steps Taken per Day",
-#            properties = axis_props(
-#              axis = list(stroke = "white"),
-#              labels = list(fontSize = 0)))
-# 
-# steps
+```{r Number_of_Steps_ggvis}
 
+# Use dplyr and ggvis to group and display histogram of total steps
+steps <- 
+a_data %>%
+  group_by(date) %>%
+  summarize(nsteps = sum(steps)) %>%
+  ggvis(~nsteps) %>%
+  layer_histograms(binwidth = 1000) %>%
+  add_axis("x", title = "Number of Steps Taken") %>%
+  add_axis("x", orient = "top", ticks = 0, title = "Histogram of Steps Taken per Day",
+           properties = axis_props(
+             axis = list(stroke = "white"),
+             labels = list(fontSize = 0)))
+
+steps
+```
+```{r Number_of_Steps_ggplot}
 steps_plot <-
 a_data %>%
   group_by(date) %>%
@@ -88,21 +91,22 @@ a_data %>%
 steps_plot + labs(title="Number of Steps per Day", x= "Number of Steps")
 
 #Place plot in figures directory
-
-png(file = "./figures/rrpa1_hist1.png")
-
-steps_plot <-
-a_data %>%
-  group_by(date) %>%
-  summarize(nsteps = sum(steps)) %>%
-  ggplot(aes(x=nsteps)) + 
-    geom_histogram(binwidth = 1000) +
-    labs(title="Number of Steps per Day", x= "Number of Steps")
-
-steps_plot
-
-dev.off()
-
+#not necessary with correct options
+# png(file = "./figures/rrpa1_hist1.png")
+# 
+# steps_plot <-
+# a_data %>%
+#   group_by(date) %>%
+#   summarize(nsteps = sum(steps)) %>%
+#   ggplot(aes(x=nsteps)) + 
+#     geom_histogram(binwidth = 1000) +
+#     labs(title="Number of Steps per Day", x= "Number of Steps")
+# 
+# steps_plot
+# 
+# dev.off()
+```
+```{r Group_Data_Average_Steps_per_Day}
 # group data by day summing steps
 meansteps <-
     a_data %>%
@@ -116,7 +120,6 @@ med <- median(meansteps$nsteps,na.rm=TRUE)
 
 ms
 med
-    
 ```
 The mean number of steps taken per day is **`r as.integer(ms)`** and the median 
 number of steps taken per day is **`r med`**.  
@@ -128,7 +131,7 @@ and the average number of steps taken, averaged across all days (y-axis)
 
 Which 5-minute interval, on average across all the days in the dataset,  
 contains the maximum number of steps?  
-```{r}
+```{r Time_Series, fig.cap="Time Series"}
 
 # Find and remove NA rows
 
@@ -144,14 +147,14 @@ ga_data <- a_data[!bad_steps,]
 summary(a_data)
 summary(ga_data)
 
-# inter <-
-#     ga_data %>%
-#     group_by(interval) %>%
-#     summarize(avgsteps = mean(steps)) %>%
-#     ggvis(~interval,~avgsteps) %>%
-#     layer_paths()
-# 
-# inter
+inter <-
+    ga_data %>%
+    group_by(interval) %>%
+    summarize(avgsteps = mean(steps)) %>%
+    ggvis(~interval,~avgsteps) %>%
+    layer_paths()
+
+inter
 
 # Plot time series avgsteps by interval
 
@@ -169,21 +172,21 @@ inter_ggp
 
 # Save Plot to figures dirtectory
 
-png(file = "./figures/rrpa1_interval.png")
-
-inter_ggp <-
-    ga_data %>%
-    group_by(interval) %>%
-    summarize(avgsteps = mean(steps)) %>%
-    ggplot(aes(x=interval,y=avgsteps)) +
-           geom_line() +
-           scale_x_continuous(breaks = seq(0, 2400, by = 200)) +
-           labs(title="Time Series of Average Steps over Interval", 
-                x= "Intra Day Interval")
-
-inter_ggp
-
-dev.off()
+# png(file = "./figures/rrpa1_interval.png")
+# 
+# inter_ggp <-
+#     ga_data %>%
+#     group_by(interval) %>%
+#     summarize(avgsteps = mean(steps)) %>%
+#     ggplot(aes(x=interval,y=avgsteps)) +
+#            geom_line() +
+#            scale_x_continuous(breaks = seq(0, 2400, by = 200)) +
+#            labs(title="Time Series of Average Steps over Interval", 
+#                 x= "Intra Day Interval")
+# 
+# inter_ggp
+# 
+# dev.off()
 
 # order avgstep by interval data from High to Low
 
@@ -243,7 +246,7 @@ using the average of each interval across all days to replace missing step data
 in the dataframe.  
 
 
-```{r}
+```{r Replace_Missing_Values}
 
 #Find missing data values
 sum(is.na(a_data))
@@ -277,7 +280,8 @@ head(tt)
 tail(tt)
 
 summary(tt)
-
+```
+```{r Revised_Histogram}
 # Plot histogram with missing values replaced with averages
 steps_plot_revised <-
 tt %>%
@@ -288,19 +292,19 @@ tt %>%
          
 steps_plot_revised + labs(title="Number of Steps per Day", x= "Number of Steps")
 
-png(file = "./figures/rrpa1_hist1_rev.png")
-
-steps_plot_revised <-
-tt %>%
-  group_by(date) %>%
-  summarize(nsteps = sum(steps)) %>%
-  ggplot(aes(x=nsteps)) + 
-    geom_histogram(binwidth = 1000) +
-    labs(title="Number of Steps per Day", x= "Number of Steps")
-
-steps_plot_revised
-
-dev.off()
+# png(file = "./figures/rrpa1_hist1_rev.png")
+# 
+# steps_plot_revised <-
+# tt %>%
+#   group_by(date) %>%
+#   summarize(nsteps = sum(steps)) %>%
+#   ggplot(aes(x=nsteps)) + 
+#     geom_histogram(binwidth = 1000) +
+#     labs(title="Number of Steps per Day", x= "Number of Steps")
+# 
+# steps_plot_revised
+# 
+# dev.off()
 
 # group data by day summing steps
 meansteps_revised <-
@@ -341,7 +345,7 @@ activity monitor data. Note that the above plot was made using the lattice
 system but you can make the same version of the plot using any plotting system  
 you choose.
 
-```{r}
+```{r Weekends_versus_Weekdays}
 
 inter_by_day_type <-
     tt %>%
@@ -359,26 +363,26 @@ inter_by_day_type <-
 
 inter_by_day_type
 
-png(file = "./figures/rrpa1_ts_day_type.png")
+# png(file = "./figures/rrpa1_ts_day_type.png")
+# 
+# inter_by_day_type <-
+#     tt %>%
+#     mutate(day_name = weekdays(date),
+#            day_type = ifelse(day_name == "Saturday" | 
+#                              day_name == "Sunday","Weekend","Weekday")) %>%
+#     group_by(interval,day_type) %>%
+#     summarize(avgsteps_day = mean(steps)) %>%
+#     ggplot(aes(x=interval,y=avgsteps_day)) +
+#            geom_line() +
+#            facet_grid(day_type ~ .) +
+#            scale_x_continuous(breaks = seq(0, 2400, by = 200)) +
+#            labs(title="Time Series of Average Steps over Interval", 
+#                 x= "Intra Day Interval")
+# 
+# inter_by_day_type
 
-inter_by_day_type <-
-    tt %>%
-    mutate(day_name = weekdays(date),
-           day_type = ifelse(day_name == "Saturday" | 
-                             day_name == "Sunday","Weekend","Weekday")) %>%
-    group_by(interval,day_type) %>%
-    summarize(avgsteps_day = mean(steps)) %>%
-    ggplot(aes(x=interval,y=avgsteps_day)) +
-           geom_line() +
-           facet_grid(day_type ~ .) +
-           scale_x_continuous(breaks = seq(0, 2400, by = 200)) +
-           labs(title="Time Series of Average Steps over Interval", 
-                x= "Intra Day Interval")
 
-inter_by_day_type
-
-
-dev.off()
+# dev.off()
 ```
 The panel plot does show differences in the time series of steps on weekdays
 versus weekends.  
